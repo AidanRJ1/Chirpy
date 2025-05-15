@@ -15,17 +15,19 @@ import (
 type apiConfig struct {
 	fileServerHits atomic.Int32
 	db             *database.Queries
+	platform       string
 }
 
 func main() {
 	godotenv.Load()
 	dbURL := os.Getenv("DB_URL")
 
-	db, err := sql.Open("postgres", dbURL)
+	dbConn, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("Error Reading Database: %v", err)
 	}
-	dbQueries := database.New(db)
+
+	dbQueries := database.New(dbConn)
 
 	mux := http.NewServeMux()
 	handler := http.FileServer(http.Dir("."))
@@ -33,6 +35,7 @@ func main() {
 	apiCfg := apiConfig{
 		fileServerHits: atomic.Int32{},
 		db:             dbQueries,
+		platform:       os.Getenv("PLATFORM"),
 	}
 
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(http.StripPrefix("/app/", handler)))
@@ -40,6 +43,7 @@ func main() {
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", apiCfg.handlerReset)
 	mux.HandleFunc("POST /api/validate_chirp", handlerValidateChirp)
+	mux.HandleFunc("POST /api/users", apiCfg.handlerUsersCreate)
 
 	server := http.Server{
 		Addr:    ":8080",
