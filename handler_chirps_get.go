@@ -16,7 +16,7 @@ func (cfg *apiConfig) handlerChirpsGet(w http.ResponseWriter, r *http.Request) {
 
 	dbChirp, err := cfg.db.GetChirp(r.Context(), chirpID)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't get chirp", err)
+		respondWithError(w, http.StatusNotFound, "Couldn't get chirp", err)
 		return
 	}
 
@@ -32,7 +32,7 @@ func (cfg *apiConfig) handlerChirpsGet(w http.ResponseWriter, r *http.Request) {
 func (cfg *apiConfig) handlerChirpsGetAll(w http.ResponseWriter, r *http.Request) {
 	dbChirps, err := cfg.db.GetChirps(r.Context())
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't get all chirps", err)
+		respondWithError(w, http.StatusNotFound, "Couldn't get all chirps", err)
 		return
 	}
 
